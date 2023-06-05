@@ -74,10 +74,12 @@ if uploaded_file is not None:
 
     st.write(df_sum.transpose())
     
+    
     # ---------------------------------------------------------------------------- #
-    #                                    Entrate                                   #
+    #                                   Entrate                                    #
     # ---------------------------------------------------------------------------- #
-   
+
+    
     st.write("## Entrate")
     categoriesdf = dataframe.loc[:,"Quote associative":"Altro"]
     categoriesdf["Descrizione operazioni"] = dataframe["Descrizione operazioni"]
@@ -100,6 +102,9 @@ if uploaded_file is not None:
     else:
         barplotent = px.bar(df_melted_catent, x='Column', y='Sum')
     st.plotly_chart(barplotent)
+    
+    st.write("### Analisi delle entrate")
+    st.write(categoriesdf.describe())
     
     
 
