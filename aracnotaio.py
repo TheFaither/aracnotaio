@@ -106,6 +106,36 @@ if uploaded_file is not None:
     st.write("### Analisi delle entrate per centri di spesa")
     st.write(categoriesdf.describe())
     
+    # ---------------------------------------------------------------------------- #
+    #                                   Uscite                                    #
+    # ---------------------------------------------------------------------------- #
+
+    
+    st.write("## Uscite per centri di spesa")
+    categoriesdf = dataframe.loc[:,"Cancelleria":"Altro.1"]
+    categoriesdf["Descrizione operazioni"] = dataframe["Descrizione operazioni"]
+    
+
+    
+    df_sum_catent = (
+        categoriesdf
+        .groupby("Descrizione operazioni")
+        .sum()
+    )
+    
+    df_melted_catent = pd.melt(df_sum_catent.reset_index(), id_vars='Descrizione operazioni', value_vars=df_sum_catent.reset_index().columns[1:], var_name='Column', value_name='Sum')
+
+    opcolor = st.checkbox("Mostra singole operazioni", key="opcoloruscite")
+    if opcolor:
+        barplotent = px.bar(df_melted_catent, x='Column', y='Sum', color='Descrizione operazioni')
+    else:
+        barplotent = px.bar(df_melted_catent, x='Column', y='Sum')
+    st.plotly_chart(barplotent)
+    
+    st.write("### Analisi delle uscite per centri di spesa")
+    st.write(categoriesdf.describe())
+    
+    
     
 
     
