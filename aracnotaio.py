@@ -72,6 +72,8 @@ if uploaded_file is not None:
     barplotstack = px.bar(df_melted, x='Column', y='Sum', color='Descrizione operazioni', barmode="stack")
     st.plotly_chart(barplotstack)
 
+
+    st.write("### Somma ammontare per singole operazioni")
     st.write(df_sum.transpose())
     
     
@@ -80,7 +82,7 @@ if uploaded_file is not None:
     # ---------------------------------------------------------------------------- #
 
     
-    st.write("## Entrate")
+    st.write("## Entrate per centri di spesa")
     categoriesdf = dataframe.loc[:,"Quote associative":"Altro"]
     categoriesdf["Descrizione operazioni"] = dataframe["Descrizione operazioni"]
     
