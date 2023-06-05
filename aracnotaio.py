@@ -226,6 +226,6 @@ with tabadd:
         )
         dfadd = pd.concat([dfadd, row], ignore_index=True,)
         dfadd.to_feather("dfadd.feather")
-    st.write(dfadd)
+    st.data_editor(dfadd)
     
     st.bar_chart(dfadd, x= "Categoria", y="Spesa")
