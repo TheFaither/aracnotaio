@@ -132,3 +132,6 @@ if uploaded_file is not None:
     st.plotly_chart(barplotent)
     
     
+    st.write("### Analisi delle entrate")
+    st.write(categoriesdf.describe())
+    
