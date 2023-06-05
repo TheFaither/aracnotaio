@@ -73,7 +73,7 @@ if uploaded_file is not None:
     st.plotly_chart(barplotstack)
 
 
-    st.write("### Somma ammontare per singole operazioni")
+    st.write("### Ammontare per singole operazioni")
     st.write(df_sum.transpose())
     
     
@@ -96,8 +96,6 @@ if uploaded_file is not None:
     
     df_melted_catent = pd.melt(df_sum_catent.reset_index(), id_vars='Descrizione operazioni', value_vars=df_sum_catent.reset_index().columns[1:], var_name='Column', value_name='Sum')
 
-    st.write("### Entrate per tipo di  operazione")
-
     opcolor = st.checkbox("Mostra singole operazioni", key="opcolor")
     if opcolor:
         barplotent = px.bar(df_melted_catent, x='Column', y='Sum', color='Descrizione operazioni')
@@ -105,7 +103,7 @@ if uploaded_file is not None:
         barplotent = px.bar(df_melted_catent, x='Column', y='Sum')
     st.plotly_chart(barplotent)
     
-    st.write("### Analisi delle entrate")
+    st.write("### Analisi delle entrate per centri di spesa")
     st.write(categoriesdf.describe())
     
     
