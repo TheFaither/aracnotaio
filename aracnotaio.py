@@ -24,6 +24,8 @@ negativecolumns = ["UsciteCassa", "UsciteBancaProssima", "UscitePaypal"]
 
 uploaded_file = st.file_uploader("Choose a file")
 if uploaded_file is not None:
+    
+    # ------------------------------ entrate uscite ------------------------------ #
     dataframe = pd.read_excel(
         uploaded_file, skiprows=[0, 1, 2, 3, 4, 5, 6, 8], header=0, index_col=1
     ).rename(columns=renamingdict)
@@ -71,3 +73,62 @@ if uploaded_file is not None:
     st.plotly_chart(barplotstack)
 
     st.write(df_sum.transpose())
+    
+    
+    # ---------------------------------------------------------------------------- #
+    #                                   Entrate                                    #
+    # ---------------------------------------------------------------------------- #
+    
+    st.write("## Entrate")
+    categoriesdf = dataframe.loc[:,"Quote associative":"Altro"]
+    categoriesdf["Descrizione operazioni"] = dataframe["Descrizione operazioni"]
+    
+
+    
+    df_sum_catent = (
+        categoriesdf
+        .groupby("Descrizione operazioni")
+        .sum()
+    )
+    
+    df_melted_catent = pd.melt(df_sum_catent.reset_index(), id_vars='Descrizione operazioni', value_vars=df_sum_catent.reset_index().columns[1:], var_name='Column', value_name='Sum')
+
+    st.write("### Entrate per tipo di  operazione")
+
+    opcolor = st.checkbox("Colora secondo Descrizione operazione")
+    if opcolor:
+        barplotent = px.bar(df_melted_catent, x='Column', y='Sum', color='Descrizione operazioni')
+    else:
+        barplotent = px.bar(df_melted_catent, x='Column', y='Sum')
+    st.plotly_chart(barplotent)
+    
+    st.write(df_sum_catent.transpose())
+    
+    # ---------------------------------------------------------------------------- #
+    #                                   Uscite                                     #
+    # ---------------------------------------------------------------------------- #
+    
+    st.write("## Entrate")
+    categoriesdf = dataframe.loc[:,"Quote associative":"Altro"]
+    categoriesdf["Descrizione operazioni"] = dataframe["Descrizione operazioni"]
+    
+
+    
+    df_sum_catent = (
+        categoriesdf
+        .groupby("Descrizione operazioni")
+        .sum()
+    )
+    
+    df_melted_catent = pd.melt(df_sum_catent.reset_index(), id_vars='Descrizione operazioni', value_vars=df_sum_catent.reset_index().columns[1:], var_name='Column', value_name='Sum')
+
+    st.write("### Entrate per tipo di  operazione")
+
+    opcolor = st.checkbox("Mostra singole operazioni", key="opcolor")
+    if opcolor:
+        barplotent = px.bar(df_melted_catent, x='Column', y='Sum', color='Descrizione operazioni')
+    else:
+        barplotent = px.bar(df_melted_catent, x='Column', y='Sum')
+    st.plotly_chart(barplotent)
+    
+    
