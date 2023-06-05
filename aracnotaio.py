@@ -17,6 +17,7 @@ renamingdict = {
     "Uscite.2": "UscitePaypal",
     "Saldo.2": "SaldoPaypal",
     "Data oper.ne": "DataOperazione",
+    "Data reg.ne": "DataRegistrazione",
 }
 
 negativecolumns = ["UsciteCassa", "UsciteBancaProssima", "UscitePaypal"]
@@ -28,6 +29,7 @@ if uploaded_file is not None:
     ).rename(columns=renamingdict)
     print(dataframe.head)
     dataframe.loc[:,"DataOperazione"] = dataframe.loc[:,"DataOperazione"].apply(lambda x: x.replace(year = 2021))
+    dataframe.loc[:,"DataRegistrazione"] = dataframe.loc[:,"DataRegistrazione"].apply(lambda x: x.replace(year = 2021))
     dataframe.loc[:,negativecolumns] = -dataframe.loc[:,negativecolumns]
     dataframe.drop("Unnamed: 0", axis=1, inplace=True)
     # dataframe = dataframe.loc[:,1:]
