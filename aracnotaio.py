@@ -27,6 +27,7 @@ if uploaded_file is not None:
         uploaded_file, skiprows=[0, 1, 2, 3, 4, 5, 6, 8], header=0, index_col=1
     ).rename(columns=renamingdict)
     print(dataframe.head)
+    dataframe.loc[:,"DataOperazione"] = dataframe.loc[:,"DataOperazione"].apply(lambda x: x.replace(year = 2019))
     dataframe.loc[:,negativecolumns] = -dataframe.loc[:,negativecolumns]
     dataframe.drop("Unnamed: 0", axis=1, inplace=True)
     # dataframe = dataframe.loc[:,1:]
