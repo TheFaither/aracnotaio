@@ -260,64 +260,10 @@ with tabgsheet:
         return pd.read_csv(csv_url)
 
     dfadd = load_data(st.secrets["public_gsheets_url"])
-    print(dfadd.head())
 
     dfaddanalysis = pd.DataFrame()
-    # --------------------------------- funzioni --------------------------------- #
-    # containervalue = st.container()
-    # opzionientrata = [
-    #     "Quote associative",
-    #     "Erogazioni liberari",
-    #     "Webinar e corsi",
-    #     "Contributi pubblici",
-    #     "Interessi attivi",
-    #     "Attività economica",
-    #     "Cessione a terzi beni di modesto valore/oggettistica",
-    #     "Partecipazione Workshop/bioblitz",
-    # ]
-    # opzioniuscita = [
-    #     "Cancelleria",
-    #     "Attrezzatura e spese tipografiche",
-    #     "Postali e bollati",
-    #     "Imposte e tasse",
-    #     "Spese bancarie",
-    #     "Costi informatici",
-    #     "Costi Trasferte Missioni (viaggi+pasti)",
-    #     "Compensi professionali",
-    #     "Altro",
-    # ]
-# 
-    # # ----------------------------------- form ----------------------------------- #
-    # descrizione = st.text_input("Descrizione operazione", key="localdesc")
-    # data = st.date_input("Data operazione", key="localdata")
-    # conto = st.selectbox("Conto", options=["Cassa", "Banca Prossima", "Paypal"], key="localconto")
-    # with containervalue:
-    #     valore = st.number_input("Valore", key="localvalore")
-    #     categoria = st.selectbox(
-    #         "Categoria",
-    #         options=opzionientrata + opzioniuscita,
-    #         key="localcategoria",
-    #     )
-    # submit = st.button("Submit", key="localsubmit")
-
-    # ---------------------------------- valori ---------------------------------- #
-    if submit:
-        row = pd.DataFrame(
-            data={
-                "Descrizione operazione": descrizione,
-                "Data operazione": data,
-                "Conto": conto,
-                "Categoria": categoria,
-                "Spesa": valore,
-            },
-            index=[0],
-        )
-        dfadd = pd.concat(
-            [dfadd, row],
-            ignore_index=True,
-        )
-        dfadd.to_feather("dfadd.feather")
-    st.data_editor(dfadd)
+    
+    st.write(dfadd)
     try:
         dfanalysis = (
             dfadd
