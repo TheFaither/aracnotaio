@@ -159,7 +159,6 @@ with tabadd:
     # ----------------------------------- intro ---------------------------------- #
     st.write("## Bozza form per inserimento spesa")
     # st.write("valori positivi inseriscono entrate, valori negativi inseriscono uscite")
-
     # --------------------------------- dataframe -------------------------------- #
     try:
         dfadd = pd.read_feather("dfadd.feather")
@@ -173,42 +172,41 @@ with tabadd:
                 "Spesa",
             ]
         )
+    dfaddanalysis = pd.DataFrame()
     # --------------------------------- funzioni --------------------------------- #
     containervalue = st.container()
     opzionientrata = [
-                        "Quote associative",
-                        "Erogazioni liberari",
-                        "Webinar e corsi",
-                        "Contributi pubblici",
-                        "Interessi attivi",
-                        "Attività economica",
-                        "Cessione a terzi beni di modesto valore/oggettistica",
-                        "Partecipazione Workshop/bioblitz",
-                    ]
+        "Quote associative",
+        "Erogazioni liberari",
+        "Webinar e corsi",
+        "Contributi pubblici",
+        "Interessi attivi",
+        "Attività economica",
+        "Cessione a terzi beni di modesto valore/oggettistica",
+        "Partecipazione Workshop/bioblitz",
+    ]
     opzioniuscita = [
-                        "Cancelleria",
-                        "Attrezzatura e spese tipografiche",
-                        "Postali e bollati",
-                        "Imposte e tasse",
-                        "Spese bancarie",
-                        "Costi informatici",
-                        "Costi Trasferte Missioni (viaggi+pasti)",
-                        "Compensi professionali",
-                        "Altro",
-                    ]
+        "Cancelleria",
+        "Attrezzatura e spese tipografiche",
+        "Postali e bollati",
+        "Imposte e tasse",
+        "Spese bancarie",
+        "Costi informatici",
+        "Costi Trasferte Missioni (viaggi+pasti)",
+        "Compensi professionali",
+        "Altro",
+    ]
 
     # ----------------------------------- form ----------------------------------- #
     descrizione = st.text_input("Descrizione operazione")
     data = st.date_input("Data operazione")
     conto = st.selectbox("Conto", options=["Cassa", "Banca Prossima", "Paypal"])
     with containervalue:
-        valore = st.number_input(
-            "Valore", key="valore"
-        )
+        valore = st.number_input("Valore", key="valore")
         categoria = st.selectbox(
-                    "Categoria",
-                    options=opzionientrata+opzioniuscita,
-                    key="categoria",
+            "Categoria",
+            options=opzionientrata + opzioniuscita,
+            key="categoria",
         )
     submit = st.button("Submit")
 
@@ -216,16 +214,33 @@ with tabadd:
     if submit:
         row = pd.DataFrame(
             data={
-                "Descrizione operazione" : descrizione,
-                "Data operazione" : data,
-                "Conto" : conto,
-                "Categoria" : categoria,
-                "Spesa" : valore,
+                "Descrizione operazione": descrizione,
+                "Data operazione": data,
+                "Conto": conto,
+                "Categoria": categoria,
+                "Spesa": valore,
             },
-            index=[0]
+            index=[0],
         )
-        dfadd = pd.concat([dfadd, row], ignore_index=True,)
+        dfadd = pd.concat(
+            [dfadd, row],
+            ignore_index=True,
+        )
         dfadd.to_feather("dfadd.feather")
     st.data_editor(dfadd)
-    
-    st.bar_chart(dfadd, x= "Categoria", y="Spesa")
+
+    dfanalysis = (
+        dfadd
+        .groupby("Conto")["Spesa"]
+        .cumsum(axis=0)
+    ).transform(pd.DataFrame).rename({"Spesa": "Saldo Conto"}, axis=1)
+    dfanalysis["Totale"] = dfadd["Spesa"].cumsum()
+    st.write("### Tabella con Saldo cumulativo e Totale")
+    st.write(pd.concat([dfadd, dfanalysis], axis=1))
+    # dfanalysis["Conto"] = dfadd["Conto"]
+    st.write("### Valore corrente per Conto")
+    st.write(pd.concat([dfadd, dfanalysis], axis=1).groupby("Conto")["Spesa"].agg("sum").rename({"Spesa": "Saldo"}, axis=0))
+    st.write("### Valore corrente per Categoria")
+    st.write(pd.concat([dfadd, dfanalysis], axis=1).groupby("Categoria")["Spesa"].agg("sum").rename({"Spesa": "Saldo"}, axis=0))
+
+    st.bar_chart(dfadd, x="Categoria", y="Spesa")
