@@ -22,7 +22,7 @@ renamingdict = {
 
 negativecolumns = ["UsciteCassa", "UsciteBancaProssima", "UscitePaypal"]
 
-tabview, tabadd = st.tabs(["Analisi", "Aggiungi spesa"])
+tabview, tabadd, tabgsheet = st.tabs(["Analisi", "Aggiungi spesa (Prova locale)", "Lettura spese (Prova su gsheet)"])
 
 with tabview:
     uploaded_file = st.file_uploader("Choose a file")
@@ -160,6 +160,7 @@ with tabadd:
     st.write("## Bozza form per inserimento spesa")
     # st.write("valori positivi inseriscono entrate, valori negativi inseriscono uscite")
     # --------------------------------- dataframe -------------------------------- #
+    
     try:
         dfadd = pd.read_feather("dfadd.feather")
     except Exception as e:
@@ -228,19 +229,109 @@ with tabadd:
         )
         dfadd.to_feather("dfadd.feather")
     st.data_editor(dfadd)
+    try:
+        dfanalysis = (
+            dfadd
+            .groupby("Conto")["Spesa"]
+            .cumsum(axis=0)
+        ).transform(pd.DataFrame).rename({"Spesa": "Saldo Conto"}, axis=1)
+        dfanalysis["Totale"] = dfadd["Spesa"].cumsum()
+        st.write("### Tabella con Saldo cumulativo e Totale")
+        st.write(pd.concat([dfadd, dfanalysis], axis=1))
+        # dfanalysis["Conto"] = dfadd["Conto"]
+        st.write("### Valore corrente per Conto")
+        st.write(pd.concat([dfadd, dfanalysis], axis=1).groupby("Conto")["Spesa"].agg("sum").rename({"Spesa": "Saldo"}, axis=0))
+        st.write("### Valore corrente per Categoria")
+        st.write(pd.concat([dfadd, dfanalysis], axis=1).groupby("Categoria")["Spesa"].agg("sum").rename({"Spesa": "Saldo"}, axis=0))
+    except:
+        pass
+    st.bar_chart(dfadd, x="Categoria", y="Spesa")
+    
+with tabgsheet:
+    # ----------------------------------- intro ---------------------------------- #
+    st.write("## Bozza lettura diretta da gsheet")
+    st.write("### [Link al gsheet](https://docs.google.com/spreadsheets/d/1Nn_LPzuhkHYHS36e5_cQrJOdnngG37XkI34tpa6ekFY/edit#gid=0)")
+    # --------------------------------- dataframe -------------------------------- #
+    # Read in data from the Google Sheet.
+    # Uses st.cache_data to only rerun when the query changes or after 10 min.
+    @st.cache_data(ttl=180)
+    def load_data(sheets_url):
+        csv_url = sheets_url.replace("/edit#gid=", "/export?format=csv&gid=")
+        return pd.read_csv(csv_url)
 
-    dfanalysis = (
-        dfadd
-        .groupby("Conto")["Spesa"]
-        .cumsum(axis=0)
-    ).transform(pd.DataFrame).rename({"Spesa": "Saldo Conto"}, axis=1)
-    dfanalysis["Totale"] = dfadd["Spesa"].cumsum()
-    st.write("### Tabella con Saldo cumulativo e Totale")
-    st.write(pd.concat([dfadd, dfanalysis], axis=1))
-    # dfanalysis["Conto"] = dfadd["Conto"]
-    st.write("### Valore corrente per Conto")
-    st.write(pd.concat([dfadd, dfanalysis], axis=1).groupby("Conto")["Spesa"].agg("sum").rename({"Spesa": "Saldo"}, axis=0))
-    st.write("### Valore corrente per Categoria")
-    st.write(pd.concat([dfadd, dfanalysis], axis=1).groupby("Categoria")["Spesa"].agg("sum").rename({"Spesa": "Saldo"}, axis=0))
+    dfadd = load_data(st.secrets["public_gsheets_url"])
+    print(dfadd.head())
 
+    dfaddanalysis = pd.DataFrame()
+    # --------------------------------- funzioni --------------------------------- #
+    # containervalue = st.container()
+    # opzionientrata = [
+    #     "Quote associative",
+    #     "Erogazioni liberari",
+    #     "Webinar e corsi",
+    #     "Contributi pubblici",
+    #     "Interessi attivi",
+    #     "Attività economica",
+    #     "Cessione a terzi beni di modesto valore/oggettistica",
+    #     "Partecipazione Workshop/bioblitz",
+    # ]
+    # opzioniuscita = [
+    #     "Cancelleria",
+    #     "Attrezzatura e spese tipografiche",
+    #     "Postali e bollati",
+    #     "Imposte e tasse",
+    #     "Spese bancarie",
+    #     "Costi informatici",
+    #     "Costi Trasferte Missioni (viaggi+pasti)",
+    #     "Compensi professionali",
+    #     "Altro",
+    # ]
+# 
+    # # ----------------------------------- form ----------------------------------- #
+    # descrizione = st.text_input("Descrizione operazione", key="localdesc")
+    # data = st.date_input("Data operazione", key="localdata")
+    # conto = st.selectbox("Conto", options=["Cassa", "Banca Prossima", "Paypal"], key="localconto")
+    # with containervalue:
+    #     valore = st.number_input("Valore", key="localvalore")
+    #     categoria = st.selectbox(
+    #         "Categoria",
+    #         options=opzionientrata + opzioniuscita,
+    #         key="localcategoria",
+    #     )
+    # submit = st.button("Submit", key="localsubmit")
+
+    # ---------------------------------- valori ---------------------------------- #
+    if submit:
+        row = pd.DataFrame(
+            data={
+                "Descrizione operazione": descrizione,
+                "Data operazione": data,
+                "Conto": conto,
+                "Categoria": categoria,
+                "Spesa": valore,
+            },
+            index=[0],
+        )
+        dfadd = pd.concat(
+            [dfadd, row],
+            ignore_index=True,
+        )
+        dfadd.to_feather("dfadd.feather")
+    st.data_editor(dfadd)
+    try:
+        dfanalysis = (
+            dfadd
+            .groupby("Conto")["Spesa"]
+            .cumsum(axis=0)
+        ).transform(pd.DataFrame).rename({"Spesa": "Saldo Conto"}, axis=1)
+        dfanalysis["Totale"] = dfadd["Spesa"].cumsum()
+        st.write("### Tabella con Saldo cumulativo e Totale")
+        st.write(pd.concat([dfadd, dfanalysis], axis=1))
+        # dfanalysis["Conto"] = dfadd["Conto"]
+        st.write("### Valore corrente per Conto")
+        st.write(pd.concat([dfadd, dfanalysis], axis=1).groupby("Conto")["Spesa"].agg("sum").rename({"Spesa": "Saldo"}, axis=0))
+        st.write("### Valore corrente per Categoria")
+        st.write(pd.concat([dfadd, dfanalysis], axis=1).groupby("Categoria")["Spesa"].agg("sum").rename({"Spesa": "Saldo"}, axis=0))
+    except:
+        pass
     st.bar_chart(dfadd, x="Categoria", y="Spesa")
